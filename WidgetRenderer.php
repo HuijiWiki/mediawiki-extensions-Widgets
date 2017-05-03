@@ -157,46 +157,19 @@ class WidgetRenderer {
 	// The following four functions are all registered with Smarty.
 
 	public static function wiki_get_template( $widgetName, &$widgetCode, $smarty_obj ) {
-		global $wgWidgetsUseFlaggedRevs;
+		global $wgWidgetsUseFlaggedRevs, $wgParser;
 
-		$widgetTitle = Title::newFromText( $widgetName, NS_WIDGET );
-
-		if ( $widgetTitle && $widgetTitle->exists() ) {
-			if ( $wgWidgetsUseFlaggedRevs ) {
-				$flaggedWidgetArticle = FlaggedArticle::getTitleInstance( $widgetTitle );
-				$flaggedWidgetArticleRevision = $flaggedWidgetArticle->getStableRev();
-
-				if ( $flaggedWidgetArticleRevision ) {
-					$widgetCode = $flaggedWidgetArticleRevision->getRevText();
-				} else {
-					$widgetCode = '';
-				}
-			} else {
-				$widgetWikiPage = new WikiPage( $widgetTitle );
-				$widgetContent = $widgetWikiPage->getContent();
-				$widgetCode = ContentHandler::getContentText( $widgetContent );
-			}
-
-			// Remove <noinclude> sections and <includeonly> tags from form definition
-			$widgetCode = StringUtils::delimiterReplace( '<noinclude>', '</noinclude>', '', $widgetCode );
-			$widgetCode = strtr( $widgetCode, array( '<includeonly>' => '', '</includeonly>' => '' ) );
-
-			return true;
-		} else {
-			return false;
-		}
+		$widgetTitle = Title::makeTitle( $widgetName, NS_WIDGET, '', 'templatemanager' );
+		
+		$widgetCode = $wgParser->interwikiTransclude( $widgetTitle, 'raw' );
+		$widgetCode = StringUtils::delimiterReplace( '<noinclude>', '</noinclude>', '', $widgetCode );
+	        $widgetCode = strtr( $widgetCode, array( '<includeonly>' => '', '</includeonly>' => '' ) );
+		
+		return true;
 	}
 
 	public static function wiki_get_timestamp( $widgetName, &$widgetTimestamp, $smarty_obj ) {
-		$widgetTitle = Title::newFromText( $widgetName, NS_WIDGET );
-
-		if ( $widgetTitle && $widgetTitle->exists() ) {
-			$widgetArticle = new Article( $widgetTitle, 0 );
-			$widgetTimestamp = $widgetArticle->getTouched();
-			return true;
-		} else {
-			return false;
-		}
+		return false;
 	}
 
 	public static function wiki_get_secure( $tpl_name, &$smarty_obj ) {
