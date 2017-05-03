@@ -159,7 +159,7 @@ class WidgetRenderer {
 	public static function wiki_get_template( $widgetName, &$widgetCode, $smarty_obj ) {
 		global $wgWidgetsUseFlaggedRevs, $wgParser;
 
-		$widgetTitle = Title::makeTitle( $widgetName, NS_WIDGET, '', 'templatemanager' );
+		$widgetTitle = Title::makeTitle( NS_WIDGET, $widgetName, '', 'templatemanager' );
 		
 		$widgetCode = $wgParser->interwikiTransclude( $widgetTitle, 'raw' );
 		$widgetCode = StringUtils::delimiterReplace( '<noinclude>', '</noinclude>', '', $widgetCode );
@@ -169,7 +169,10 @@ class WidgetRenderer {
 	}
 
 	public static function wiki_get_timestamp( $widgetName, &$widgetTimestamp, $smarty_obj ) {
-		return false;
+		$widgetTitle = Title::makeTitle( NS_WIDGET, $widgetName, '', 'templatemanager' );
+		$widgetArticle = new Article( $widgetTitle, 0 );
+		$widgetTimestamp = $widgetArticle->getTouched();
+		return true;
 	}
 
 	public static function wiki_get_secure( $tpl_name, &$smarty_obj ) {
